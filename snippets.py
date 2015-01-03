@@ -2,6 +2,7 @@ import logging
 import argparse
 import sys
 import psycopg2
+import psycopg2.extras
 
 # Set the log output file, and the log level
 logging.basicConfig(filename="snippets.log", level=logging.DEBUG)
@@ -27,11 +28,11 @@ def put(name, snippet):
 def catalog():
     """Query the available keywords from the snippets table."""
     logging.info("Querying the database")
-    with connection, connection.cursor() as cursor:
-        cursor.execute("select keyword from snippets order by desc")
+    with connection, connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute("select keyword from snippets")
         rows = cursor.fetchall()
         for row in rows:
-            print row
+            print row['keyword']
     logging.debug("Query complete")
         
 def get(name):
@@ -65,6 +66,10 @@ def main():
     put_parser.add_argument("name", help="The name of the snippet")
     put_parser.add_argument("snippet", help="The snippet text")
     
+    # Subparser for the catalog command
+    logging.debug("Constructing catalog subparser")
+    catalog_parser = subparsers.add_parser("catalog", help="Query snippet keywords")
+    
     # Subparser for the get command
     logging.debug("Constructing get subparser")
     get_parser = subparsers.add_parser("get", help="Retrieve a snippet")
@@ -81,6 +86,8 @@ def main():
     elif command == "get":
         snippet = get(**arguments)
         print("Retrieved snippet: {!r}".format(snippet))
+    elif command == "catalog":
+        keywords = catalog()
 if __name__ == "__main__":
     main()
 
