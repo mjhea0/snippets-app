@@ -28,9 +28,9 @@ def get(name):
     command = "select message from snippets where keyword=%s"
     cursor.execute(command, [name])
     # connection.commit() i dont think we need this
-    cursor.fetchone()
+    row = cursor.fetchone()
     logging.debug("Snippet retrieved successfully.")
-    return ''
+    return row
 
 def main():
     """Main function"""""
