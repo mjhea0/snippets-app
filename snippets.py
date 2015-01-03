@@ -24,6 +24,16 @@ def put(name, snippet):
     logging.debug("Snippet stored successfully.")
     return name, snippet
 
+def catalog():
+    """Query the available keywords from the snippets table."""
+    logging.info("Querying the database")
+    with connection, connection.cursor() as cursor:
+        cursor.execute("select keyword from snippets order by desc")
+        rows = cursor.fetchall()
+        for row in rows:
+            print row
+    logging.debug("Query complete")
+        
 def get(name):
     """Retrieve the snippet with a given name."""
     logging.info("Retrieving snippet {!r}".format(name))
