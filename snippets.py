@@ -15,8 +15,13 @@ def put(name, snippet):
     """Store a snippet with an associated name."""
     logging.info("Storing snippet {!r}: {!r}".format(name, snippet))
     cursor = connection.cursor()
-    command = "insert into snippets values (%s, %s)"
-    cursor.execute(command, (name, snippet))
+    try:
+        command = "insert into snippets values (%s, %s)"
+        cursor.execute(command, (name, snippet))
+    except psycopg2.IntegrityError as e:
+        connection.rollback()
+        command = "update snippets set message=%s where keyword=%s"
+        cursor.execute(command, (snippet, name))
     connection.commit()
     logging.debug("Snippet stored successfully.")
     return name, snippet
@@ -30,7 +35,16 @@ def get(name):
     # connection.commit() i dont think we need this
     row = cursor.fetchone()
     logging.debug("Snippet retrieved successfully.")
-    return row
+    if not row:
+        ans = raw_input('Would you like to create it? ')
+        if ans == 'yes':
+            print "ok, we can do that"
+            # put(name, snippet)
+        else:
+            # break?
+            print "ok, nevermind"
+    else:
+        return row[0]
 
 def main():
     """Main function"""""
