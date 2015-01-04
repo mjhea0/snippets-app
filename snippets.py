@@ -39,7 +39,7 @@ def search(string):
     """Return a list of snippets containing a given string"""
     logging.info("Searching snippets for {!r}".format(string))
     with connection, connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute("select message from snippets where message like (%s)", (string,))
+        cursor.execute("select message from snippets where message like '%%'||%s||'%%'", (string,))
         rows = cursor.fetchall()
         for row in rows:
             print row['message']
@@ -107,8 +107,10 @@ def main():
         keywords = catalog()
         print("Retrieved keywords")
     elif command == "search":
-        string = search(**arguments)
-        print("Search complete. Found {!r} in these messages".format(string))
+        word = search(**arguments)
+        print("Search complete")
+        #print(Found {!r} in these messages".format(word))
+        #why cant i get this to print?
 if __name__ == "__main__":
     main()
 
