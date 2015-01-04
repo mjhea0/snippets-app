@@ -29,12 +29,24 @@ def catalog():
     """Query the available keywords from the snippets table."""
     logging.info("Querying the database")
     with connection, connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute("select keyword from snippets")
+        cursor.execute("select keyword from snippets order by keyword ASC")
         rows = cursor.fetchall()
         for row in rows:
             print row['keyword']
     logging.debug("Query complete")
-        
+    
+def search(string):
+    """Return a list of snippets containing a given string"""
+    logging.info("Searching snippets for {!r}".format(string))
+    with connection, connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        cursor.execute("select message from snippets where message like (%s)", (string,))
+        rows = cursor.fetchall()
+        for row in rows:
+            print row['message']
+    logging.debug("Search complete")
+    
+    
+    
 def get(name):
     """Retrieve the snippet with a given name."""
     logging.info("Retrieving snippet {!r}".format(name))
@@ -70,6 +82,11 @@ def main():
     logging.debug("Constructing catalog subparser")
     catalog_parser = subparsers.add_parser("catalog", help="Query snippet keywords")
     
+    # Subparser for the search command
+    logging.debug("Constructing search subparser")
+    search_parser = subparsers.add_parser("search", help="Search snippets for a string")
+    search_parser.add_argument("string", help="The string you are searching for")
+    
     # Subparser for the get command
     logging.debug("Constructing get subparser")
     get_parser = subparsers.add_parser("get", help="Retrieve a snippet")
@@ -88,6 +105,10 @@ def main():
         print("Retrieved snippet: {!r}".format(snippet))
     elif command == "catalog":
         keywords = catalog()
+        print("Retrieved keywords")
+    elif command == "search":
+        string = search(**arguments)
+        print("Search complete. Found {!r} in these messages".format(string))
 if __name__ == "__main__":
     main()
 
