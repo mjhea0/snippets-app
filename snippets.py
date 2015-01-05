@@ -29,7 +29,7 @@ def catalog():
     """Query the available keywords from the snippets table."""
     logging.info("Querying the database")
     with connection, connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute("select keyword from snippets order by keyword ASC")
+        cursor.execute("select keyword from snippets where hidden=False order by keyword ASC")
         rows = cursor.fetchall()
         for row in rows:
             print row['keyword']
@@ -77,6 +77,7 @@ def main():
     put_parser = subparsers.add_parser("put", help="Store a snippet")
     put_parser.add_argument("name", help="The name of the snippet")
     put_parser.add_argument("snippet", help="The snippet text")
+    put_parser.add_argument("--hidden", help="Sets the hidden column to True", action="store_true")
     
     # Subparser for the catalog command
     logging.debug("Constructing catalog subparser")
