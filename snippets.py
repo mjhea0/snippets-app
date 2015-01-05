@@ -39,7 +39,7 @@ def search(string):
     """Return a list of snippets containing a given string"""
     logging.info("Searching snippets for {!r}".format(string))
     with connection, connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
-        cursor.execute("select message from snippets where message like '%%'||%s||'%%'", (string,))
+        cursor.execute("select * from snippets where message like '%%'||%s||'%%'", (string,))
         rows = cursor.fetchall()
         for row in rows:
             print row['message']
