@@ -13,11 +13,11 @@ connection = psycopg2.connect("dbname='snippets' user='action' host='localhost'"
 logging.debug("Database connection established")
 
 def put(name, snippet):
-    """Store a snippet with an associated name."""
+    """Store a snippet with an associated name.""" 
     logging.info("Storing snippet {!r}: {!r}".format(name, snippet))
     with connection, connection.cursor() as cursor:
         try:
-            cursor.execute("insert into snippets values (%s, %s)", (name, snippet))
+            cursor.execute("insert into snippets values (%s, %s, %s)", (name, snippet))
         except psycopg2.IntegrityError as e:
             connection.rollback()
             cursor.execute("update snippets set message=%s where keyword=%s", (snippet, name))
@@ -39,6 +39,7 @@ def search(string):
     """Return a list of snippets containing a given string"""
     logging.info("Searching snippets for {!r}".format(string))
     with connection, connection.cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+        # I needed the % signs because ...
         cursor.execute("select * from snippets where message like '%%'||%s||'%%'", (string,))
         rows = cursor.fetchall()
         for row in rows:
@@ -77,7 +78,7 @@ def main():
     put_parser = subparsers.add_parser("put", help="Store a snippet")
     put_parser.add_argument("name", help="The name of the snippet")
     put_parser.add_argument("snippet", help="The snippet text")
-    put_parser.add_argument("--hidden", help="Sets the hidden column to True", action="store_true")
+    put_parser.add_argument("--hide", help="Sets the hidden column to True", action="store_true")
     
     # Subparser for the catalog command
     logging.debug("Constructing catalog subparser")
