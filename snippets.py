@@ -12,12 +12,12 @@ logging.debug("Connecting to PostgreSQL")
 connection = psycopg2.connect("dbname='snippets' user='action' host='localhost'")
 logging.debug("Database connection established")
 
-def put(name, snippet):
+def put(name, snippet, hide=False):
     """Store a snippet with an associated name.""" 
     logging.info("Storing snippet {!r}: {!r}".format(name, snippet))
     with connection, connection.cursor() as cursor:
         try:
-            cursor.execute("insert into snippets values (%s, %s, %s)", (name, snippet))
+            cursor.execute("insert into snippets values (%s, %s, %s)", (name, snippet, hide))
         except psycopg2.IntegrityError as e:
             connection.rollback()
             cursor.execute("update snippets set message=%s where keyword=%s", (snippet, name))
@@ -100,8 +100,8 @@ def main():
     command = arguments.pop("command")
     
     if command == "put":
-        name, snippet = put(**arguments)
-        print("Stored {!r} as {!r}".format(snippet, name))
+        name, snippet, hide = put(**arguments)
+        print("Stored {!r} as {!r}. Hidden is set to {!r}.".format(snippet, name, hide))
     elif command == "get":
         snippet = get(**arguments)
         print("Retrieved snippet: {!r}".format(snippet))
